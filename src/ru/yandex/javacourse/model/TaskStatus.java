@@ -1,4 +1,4 @@
-package model;
+package ru.yandex.javacourse.model;
 
 public enum TaskStatus {
     NEW,

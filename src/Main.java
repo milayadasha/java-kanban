@@ -1,4 +1,5 @@
-import model.*;
+import ru.yandex.javacourse.model.*;
+import ru.yandex.javacourse.service.TaskManager;
 
 public class Main {
 

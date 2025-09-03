@@ -1,4 +1,4 @@
-package model;
+package ru.yandex.javacourse.model;
 
 import java.util.ArrayList;
 
