@@ -1,10 +1,11 @@
 import ru.yandex.javacourse.model.*;
+import ru.yandex.javacourse.service.Managers;
 import ru.yandex.javacourse.service.TaskManager;
 
 public class Main {
 
     public static void main(String[] args) {
-        TaskManager taskManager = new TaskManager();
+        TaskManager taskManager = Managers.getDefault();
         //Создание задач
         Task task1 = taskManager.addTask(new Task("Звонок бабушке", "Позвонить, чтобы узнать новости"));
         Task task2 = taskManager.addTask(new Task("Стирка", "Постирать белые вещи"));
@@ -42,12 +43,24 @@ public class Main {
         taskManager.updateSubtask(updatedSubtask3);
         updatedSubtask3.setName("Поиграть в компьютер"); //нужно, чтобы проверить, что название не изменится
 
+        //Подготовка для отображения истории (проверка разных типов задач)
+        taskManager.getTaskById(task2.getId());
+        taskManager.getEpicById(epic1.getId());
+        taskManager.getSubtaskById(subtask1.getId());
+
         printAllTasks(taskManager);
 
         //Проверка методов удаления
         taskManager.deleteTaskById(task2.getId());
         taskManager.deleteEpicById(epic1.getId());
         taskManager.deleteSubtaskById(subtask3.getId());
+
+        //Подготовка для отображения истории (проверка обновления списка)
+        int count = 0;
+        while (count < 10) {
+            taskManager.getTaskById(task1.getId());
+            count++;
+        }
 
         printAllTasks(taskManager);
     }
@@ -69,6 +82,12 @@ public class Main {
         System.out.println("Cписок всех эпиков: ");
         for (Epic epic : taskManager.getAllEpics()) {
             System.out.println(epic);
+        }
+        System.out.println();
+
+        System.out.println("История:");
+        for (Task task : taskManager.getHistory()) {
+            System.out.println(task);
         }
         System.out.println("-".repeat(20));
     }

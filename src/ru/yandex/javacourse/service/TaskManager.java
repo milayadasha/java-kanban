@@ -1,299 +1,117 @@
 package ru.yandex.javacourse.service;
 
-import ru.yandex.javacourse.model.*;
+import ru.yandex.javacourse.model.Epic;
+import ru.yandex.javacourse.model.Subtask;
+import ru.yandex.javacourse.model.Task;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
-public class TaskManager {
-    private static int idCount = 0;
-    private final HashMap<Integer, Task> tasks = new HashMap<>();
-    private final HashMap<Integer, Epic> epics = new HashMap<>();
-    private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
-
-    /**
-     * Возвращает ID для новой задачи.
-     * Увеличивает счётчик на 1.
-     */
-    private int generateId() {
-        idCount += 1;
-        return idCount;
-    }
+public interface TaskManager {
 
     /**
      * Возвращает все задачи в виде списка объектов
      */
-    public ArrayList<Task> getAllTasks() {
-        return new ArrayList<>(tasks.values());
-    }
+    ArrayList<Task> getAllTasks();
 
     /**
      * Удаляет все задачи
      */
-    public void deleteAllTasks() {
-        tasks.clear();
-    }
+    void deleteAllTasks();
 
     /**
      * Возвращает задачу по её id
      */
-    public Task getTaskById(int id) {
-        return tasks.get(id);
-    }
+    Task getTaskById(int id);
 
     /**
      * Добавляет новую задачу.
-     * Создаёт копию переданной задачи, присваивает уникальный ID и сохраняет в хранилище.
-     *
-     * @param task объект задачи, которую нужно добавить (может быть null)
-     * @return созданная копия задачи с присвоенным ID или null, если передан null
      */
-    public Task addTask(Task task) {
-        if (task == null) {
-            return null;
-        }
-        Task createdTask = new Task(task.getName(), task.getDescription());
-        createdTask.setId(generateId());
-        tasks.put(createdTask.getId(), createdTask);
-        return createdTask;
-    }
+    Task addTask(Task task);
 
     /**
      * Обновляет задачу.
-     * Создаёт копию переданной задачи и обновляет по её ID уже существующую версию в хранилище.
-     *
-     * @param task объект задачи, которую нужно обновить (может быть null)
      */
-    public void updateTask(Task task) {
-        if (task == null) {
-            return;
-        }
-        boolean isTaskExists = tasks.containsKey(task.getId());
-        if (isTaskExists) {
-            Task updatedTask = new Task(task.getName(), task.getDescription(), task.getStatus());
-            updatedTask.setId(task.getId());
-            tasks.put(updatedTask.getId(), updatedTask);
-        }
-    }
+    void updateTask(Task task);
 
     /**
      * Удаляет задачу по её id
      */
-    public void deleteTaskById(int id) {
-        tasks.remove(id);
-    }
+    void deleteTaskById(int id);
 
     /**
      * Возвращает все эпики в виде списка объектов
      */
-    public ArrayList<Epic> getAllEpics() {
-        return new ArrayList<>(epics.values());
-    }
+    ArrayList<Epic> getAllEpics();
 
     /**
      * Удаляет все эпики вместе с подзадачами
      */
-    public void deleteAllEpics() {
-        epics.clear();
-        subtasks.clear();
-    }
+    void deleteAllEpics();
 
     /**
      * Возвращает эпик по его id
      */
-    public Epic getEpicById(int id) {
-        return epics.get(id);
-    }
+    Epic getEpicById(int id);
 
     /**
      * Добавляет новый эпик.
-     * Создаёт копию переданного эпика, присваивает уникальный ID и сохраняет в хранилище.
-     *
-     * @param epic объект эпика, который нужно добавить (может быть null)
-     * @return созданная копия эпика с присвоенным ID или null, если передан null
      */
-    public Epic addEpic(Epic epic) {
-        if (epic == null) {
-            return null;
-        }
-        Epic createdEpic = new Epic(epic.getName(), epic.getDescription());
-        createdEpic.setId(generateId());
-        epics.put(createdEpic.getId(), createdEpic);
-        return createdEpic;
-    }
+    Epic addEpic(Epic epic);
 
     /**
      * Обновляет эпик.
-     * Создаёт копию переданного эпика и обновляет по его ID уже существующую версию в хранилище.
-     *
-     * @param epic объект задачи, которую нужно обновить (может быть null)
      */
-    public void updateEpic(Epic epic) {
-        if (epic == null) {
-            return;
-        }
-        boolean isEpicExists = epics.containsKey(epic.getId());
-        if (isEpicExists) {
-            Epic currentEpic = epics.get(epic.getId());
-            ArrayList<Integer> currentEpicSubtasksIdList = currentEpic.getSubtasksIdList();
-            Epic updatedEpic = new Epic(epic.getName(), epic.getDescription());
-            updatedEpic.setId(epic.getId());
-            updatedEpic.setSubtasksIdList(currentEpicSubtasksIdList);
-            updateEpicStatus(updatedEpic);
-            epics.put(updatedEpic.getId(), updatedEpic);
-        }
-    }
+    void updateEpic(Epic epic);
 
     /**
      * Удаляет эпик по его id.
-     * Вместе с ним удаляет подзадачи из хранилища, которые относились к этому эпику
      */
-    public void deleteEpicById(int id) {
-        epics.remove(id);
-        ArrayList<Integer> subtasksToRemove = new ArrayList<>();
-        for (Subtask subtask : subtasks.values()) {
-            if (subtask.getEpicId() == id) {
-                subtasksToRemove.add(subtask.getId());
-            }
-        }
-        for (Integer subtaskId : subtasksToRemove) {
-            subtasks.remove(subtaskId);
-        }
-    }
+    void deleteEpicById(int id);
 
     /**
      * Возвращает все подзадачи в виде списка объектов
      */
-    public ArrayList<Subtask> getAllSubtasks() {
-        return new ArrayList<>(subtasks.values());
-    }
+    ArrayList<Subtask> getAllSubtasks();
 
     /**
      * Удаляет все подзадачи:
-     * - из хранилища
-     * - из эпиков
      */
-    public void deleteAllSubtasks() {
-        subtasks.clear();
-        for (Epic epic : epics.values()) {
-            epic.deleteSubtasksIdList();
-            updateEpicStatus(epic);
-        }
-    }
+    void deleteAllSubtasks();
 
     /**
      * Возвращает подзадачу по её id
      */
-    public Task getSubtaskById(int id) {
-        return subtasks.get(id);
-    }
+    Subtask getSubtaskById(int id);
 
     /**
      * Добавляет новую подзадачу.
-     * Создаёт копию переданной подзадачи, присваивает уникальный ID и сохраняет в хранилище.
-     * Сохраняет ID переданной подзадачи в список ID подзадач внутри соответствующего эпика.
-     * Обновляет статус эпика.
-     *
-     * @param subtask объект подзадачи, которую нужно добавить (может быть null)
-     * @return созданная копия подзадачи с присвоенным ID или null, если передан null
      */
-    public Subtask addSubtask(Subtask subtask) {
-        if (subtask == null) {
-            return null;
-        }
-        Subtask createdSubtask = new Subtask(subtask.getName(), subtask.getDescription(), subtask.getEpicId());
-        createdSubtask.setId(generateId());
-        subtasks.put(createdSubtask.getId(), createdSubtask);
-
-        Epic epic = epics.get(createdSubtask.getEpicId());
-        epic.addSubtaskId(createdSubtask.getId());
-        updateEpicStatus(epic);
-
-        return createdSubtask;
-    }
+    Subtask addSubtask(Subtask subtask);
 
     /**
      * Обновляет подзадачу.
-     * Создаёт копию переданной подзадачи и обновляет по её ID уже существующую версию в хранилище.
-     * Обновляет статус эпика.
-     *
-     * @param subtask объект задачи, которую нужно обновить (может быть null)
      */
-    public void updateSubtask(Subtask subtask) {
-        if (subtask == null) {
-            return;
-        }
-        boolean isSubtaskExists = subtasks.containsKey(subtask.getId());
-        if (isSubtaskExists) {
-            Subtask updatedSubtask = new Subtask(subtask.getName(), subtask.getDescription(), subtask.getStatus(),
-                    subtask.getEpicId());
-            updatedSubtask.setId(subtask.getId());
-            subtasks.put(updatedSubtask.getId(), updatedSubtask);
-            Epic epic = epics.get(updatedSubtask.getEpicId());
-            updateEpicStatus(epic);
-        }
-    }
+    void updateSubtask(Subtask subtask);
 
     /**
      * Удаляет подзадачу по её id:
-     * - из списка ID подзадач соответствующего эпика
-     * - из хранилища
      */
-    public void deleteSubtaskById(int id) {
-        Subtask subtask = subtasks.get(id);
-        Epic epic = epics.get(subtask.getEpicId());
-        epic.deleteSubtaskId(id);
-        updateEpicStatus(epic);
-        subtasks.remove(id);
-    }
+    void deleteSubtaskById(int id);
 
     /**
      * Возвращает список подзадач указанного эпика.
-     * Создаёт и наполняет список объектов-подзадач из хранилища по ID эпика.
-     *
-     * @param epicId это ID эпика
-     * @return список объектов-подзадач
      */
-    public ArrayList<Subtask> getAllSubtasksByEpicId(int epicId) {
-        ArrayList<Subtask> subtasksByEpic = new ArrayList<>();
-        for (Subtask subtask : subtasks.values()) {
-            if (subtask.getEpicId() == epicId) {
-                subtasksByEpic.add(subtask);
-            }
-        }
-        return subtasksByEpic;
-    }
+    ArrayList<Subtask> getAllSubtasksByEpicId(int epicId);
 
     /**
      * Обновляет статус эпика.
-     * Получает список его подзадач и проверяет их статус. По их статусам проставляет актуальный статус эпика.
-     *
-     * @param epic объект эпика, статус которого нужно обновить.
      */
-    public void updateEpicStatus(Epic epic) {
-        if (epic == null) {
-            return;
-        }
-        ArrayList<Integer> epicSubtasksId = epic.getSubtasksIdList();
-        int subtasksCount = epicSubtasksId.size();
-        int newCount = 0;
-        int doneCount = 0;
+    void updateEpicStatus(Epic epic);
 
-        for (Integer epicSubtaskId : epicSubtasksId) {
-            Subtask subtask = subtasks.get(epicSubtaskId);
-            if (subtask.getStatus() == TaskStatus.NEW) {
-                newCount++;
-            }
-            if (subtask.getStatus() == TaskStatus.DONE) {
-                doneCount++;
-            }
-        }
-
-        if (subtasksCount == 0 || (subtasksCount == newCount)) {
-            epic.setStatus(TaskStatus.NEW);
-        } else if (subtasksCount == doneCount) {
-            epic.setStatus(TaskStatus.DONE);
-        } else {
-            epic.setStatus(TaskStatus.IN_PROGRESS);
-        }
-    }
+    /**
+     * Возвращает список просмотренных задач
+     */
+    List<Task> getHistory();
 }
+
+

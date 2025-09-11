@@ -51,6 +51,12 @@ public class Task {
         this.status = status;
     }
 
+    public Task getCopy() {
+        Task copyTask = new Task(this.name, this.description, this.status);
+        copyTask.setId(this.id);
+        return copyTask;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
