@@ -1,5 +1,6 @@
 package ru.yandex.javacourse.service;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.yandex.javacourse.model.Epic;
 import ru.yandex.javacourse.model.Subtask;
@@ -9,13 +10,26 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryTaskManagerTest {
+    private static final String TASK_NAME = "Задача";
+    private static final String TASK_DESCRIPTION = "Новая задача";
+    private static final int PREDEFINED_TASK_ID = 99;
+    private static final String EPIC_NAME = "Эпик";
+    private static final String EPIC_DESCRIPTION = "Новый эпик";
+    private static final String SUBTASK_NAME = "Подзадача";
+    private static final String SUBTASK_DESCRIPTION = "Новая подзадача";
+
     TaskManager taskManager = Managers.getDefault();
 
     @Test
-    public void canInMemoryTaskManagerAddTask() {
-        Task task = taskManager.addTask(new Task("Задача 1","Новая задача"));
+    @DisplayName("Должен успешно добавлять задачу и возвращать ее по ID")
+    public void test_AddTask_WhenTaskAddedToManager_ShouldBeRetrievableById() {
+        //given
+        Task task = taskManager.addTask(new Task(TASK_NAME,TASK_DESCRIPTION));
+
+        //when
         Task findTask = taskManager.getTaskById(task.getId());
 
+        //then
         assertNotNull(findTask, "Задача не найдена.");
         assertEquals(task, findTask, "Задачи не совпадают.");
 
@@ -27,10 +41,15 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    public void canInMemoryTaskManagerAddEpic() {
-        Epic epic = taskManager.addEpic(new Epic("Эпик 1","Новый эпик"));
+    @DisplayName("Должен успешно добавлять эпик и возвращать его  по ID")
+    public void test_AddEpic_WhenEpicAddedToManager_ShouldBeRetrievableById() {
+        //given
+        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME,EPIC_DESCRIPTION));
+
+        //when
         Epic findEpic = taskManager.getEpicById(epic.getId());
 
+        //then
         assertNotNull(findEpic, "Эпик не найден.");
         assertEquals(epic, findEpic, "Эпики не совпадают.");
 
@@ -42,12 +61,17 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    public void canInMemoryTaskManagerAddSubtask() {
-        Epic epic = taskManager.addEpic(new Epic("Эпик 1","Новый эпик"));
-        Subtask subtask = taskManager.addSubtask(new Subtask("Подзадача 1","Новая подзадча",
-                epic.getId() ));
+    @DisplayName("Должен успешно добавлять подзадачу и возвращать ее по ID")
+    public void test_AddSubtask_WhenSubtaskAddedToManager_ShouldBeRetrievableById() {
+        //given
+        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME,EPIC_DESCRIPTION));
+        Subtask subtask = taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION,
+                epic.getId()));
+
+        //when
         Subtask findSubtask = taskManager.getSubtaskById(subtask.getId());
 
+        //then
         assertNotNull(findSubtask,"Подзадача не найдена.");
         assertEquals(subtask, findSubtask, "Подзадачи не совпадают.");
 
@@ -59,12 +83,17 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    public void addTaskOnlyWithGeneratingId() {
-        Task task = new Task("Задача", "Новая задача");
-        task.setId(999);
+    @DisplayName("Должен генерировать уникальный ID при добавлении задачи с установленным ID")
+    public void test_AddTask_WhenTaskHasPredefinedId_ShouldGenerateNewId() {
+        //given
+        Task task = new Task(TASK_NAME, TASK_DESCRIPTION);
+        task.setId(PREDEFINED_TASK_ID);
+
+        //when
         Task createdTask = taskManager.addTask(task);
 
-        assertNotEquals(task.getId(),createdTask.getId(), "менеджер не генерит уникальный id во время" +
+        //then
+        assertNotEquals(task.getId(),createdTask.getId(), "Менеджер не генерит уникальный id во время" +
                 "добавления задачи");
 
     }

@@ -3,21 +3,21 @@ package ru.yandex.javacourse.service;
 import ru.yandex.javacourse.model.Epic;
 import ru.yandex.javacourse.model.Subtask;
 import ru.yandex.javacourse.model.Task;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-public class InMemoryHistoryManager implements HistoryManager{
-    private final List<Task> viewedTasks = new ArrayList<>();
+public class InMemoryHistoryManager implements HistoryManager {
+    private final List<Task> viewedTasks = new LinkedList<>();
     private static final int MAX_HISTORY_SIZE = 10;
 
     @Override
     public List<Task> getHistory() {
-        return viewedTasks;
+        return new LinkedList<>(viewedTasks);
     }
 
     @Override
     public void add(Task task) {
-        if( task == null) {
+        if (task == null) {
             return;
         }
 
