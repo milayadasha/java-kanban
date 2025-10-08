@@ -10,17 +10,16 @@ public class Main {
         Task task1 = taskManager.addTask(new Task("Звонок бабушке", "Позвонить, чтобы узнать новости"));
         Task task2 = taskManager.addTask(new Task("Стирка", "Постирать белые вещи"));
 
-        //Создание эпика b добавление подзадач
-        Epic epic1 = taskManager.addEpic(new Epic("Сделать домашнее задание","Задание для 4 спринта"));
+        //Создание эпиков и добавление подзадач
+        Epic epic1 = taskManager.addEpic(new Epic("Сделать домашнее задание","Задание для 6 спринта"));
         Subtask subtask1 = taskManager.addSubtask(new Subtask("Изучить теорию",
                 "Прочитать теорию на сайте", epic1.getId()));
         Subtask subtask2 = taskManager.addSubtask(new Subtask("Освоить тренажёр",
                 "Выполнить все задания",  epic1.getId()));
-
+        Subtask subtask3 = taskManager.addSubtask(new Subtask("Прослушать вебинар",
+                "Подключиться на вебинар в среду", epic1.getId()));
 
         Epic epic2 = taskManager.addEpic(new Epic("Переезд","Подготовиться к переезду"));
-        Subtask subtask3 = taskManager.addSubtask(new Subtask("Собрать вещи",
-                "Собрать вещи в коробки", epic2.getId()));
 
         printAllTasks(taskManager);
 
@@ -36,32 +35,31 @@ public class Main {
         updatedSubtask2.setStatus(TaskStatus.DONE);
         taskManager.updateSubtask(updatedSubtask2);
 
-        Subtask updatedSubtask3 = new Subtask("Расхламиться", "Выкинуть старые вещи",
-                epic2.getId());
+        Subtask updatedSubtask3 = new Subtask("Изучить доп.материалы", "Прочитать книгу по алгоритмам",
+                epic1.getId());
         updatedSubtask3.setId(subtask3.getId());
         updatedSubtask3.setStatus(TaskStatus.DONE);
         taskManager.updateSubtask(updatedSubtask3);
         updatedSubtask3.setName("Поиграть в компьютер"); //нужно, чтобы проверить, что название не изменится
 
-        //Подготовка для отображения истории (проверка разных типов задач)
+        printAllTasks(taskManager);
+
+        //Подготовка для отображения истории
         taskManager.getTaskById(task2.getId());
         taskManager.getEpicById(epic1.getId());
         taskManager.getSubtaskById(subtask1.getId());
-
+        taskManager.getSubtaskById(subtask2.getId());
+        taskManager.getEpicById(epic2.getId());
+        taskManager.getSubtaskById(subtask3.getId());
         printAllTasks(taskManager);
 
-        //Проверка методов удаления
+        taskManager.getTaskById(task2.getId());
+        taskManager.getSubtaskById(subtask1.getId());
+        printAllTasks(taskManager);
+
+        //Проверка удаления задачи из истории
         taskManager.deleteTaskById(task2.getId());
         taskManager.deleteEpicById(epic1.getId());
-        taskManager.deleteSubtaskById(subtask3.getId());
-
-        //Подготовка для отображения истории (проверка обновления списка)
-        int count = 0;
-        while (count < 10) {
-            taskManager.getTaskById(task1.getId());
-            count++;
-        }
-
         printAllTasks(taskManager);
     }
 
@@ -73,15 +71,15 @@ public class Main {
         }
         System.out.println();
 
-        System.out.println("Cписок всех подзадач: ");
-        for (Subtask subtask : taskManager.getAllSubtasks()) {
-            System.out.println(subtask);
-        }
-        System.out.println();
-
         System.out.println("Cписок всех эпиков: ");
         for (Epic epic : taskManager.getAllEpics()) {
             System.out.println(epic);
+        }
+        System.out.println();
+
+        System.out.println("Cписок всех подзадач: ");
+        for (Subtask subtask : taskManager.getAllSubtasks()) {
+            System.out.println(subtask);
         }
         System.out.println();
 

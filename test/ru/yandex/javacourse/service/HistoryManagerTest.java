@@ -10,9 +10,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class HistoryManagerTest {
-    private static final String TASK_NAME = "Задача 1";
-    private static final String TASK_DESCRIPTION = "Первая задача";
-    private static final String TASK_DESCRIPTION_UPDATED = "Обновлённая задача";
+    private static final String TASK_NAME = "Задача";
+    private static final String TASK_DESCRIPTION = "Описание задачи";
+    private static final String TASK_DESCRIPTION_UPDATED = "Обновлённое описание задачи";
+    private static final int TASK_ID = 1;
 
     Task task;
     HistoryManager historyManager = Managers.getDefaultHistory();
@@ -38,20 +39,44 @@ class HistoryManagerTest {
     }
 
     @Test
-    @DisplayName("Должен возвращать true, если менеджер хранит и старую версию задачи, и новую")
-    public void test_Add_AfterUpdatedTaskAddToHistoryManager_ShouldStoreBothVersions() {
+    @DisplayName("Должен возвращать true, если менеджер хранит только последнюю версию задачи")
+    public void test_Add_AfterUpdatedTaskAddToHistoryManager_ShouldStoreLastVersion() {
         //given
         historyManager.add(task);
-        Task updatedTask = new Task(task.getName(), TASK_DESCRIPTION_UPDATED);
+        Task updatedTask = task.getCopy();
+        updatedTask.setDescription(TASK_DESCRIPTION_UPDATED);
 
         //when
         historyManager.add(updatedTask);
         List<Task> historyList = historyManager.getHistory();
 
         //then
-        assertEquals(2,historyList.size(), "Обновлённая задача не добавлена.");
-        assertNotEquals(historyList.get(0).getDescription(), historyList.get(1).getDescription(),
+        assertEquals(1,historyList.size(), "История хранит больше одной версии задачи");
+        assertNotEquals(task.getDescription(), historyList.get(0).getDescription(),
                 "Менеджер хранит старую версию задачи");
+    }
+
+    @Test
+    @DisplayName("Должен возвращать true, если менеджер хранит только последнюю версию задачи")
+    public void test_Remove_AfterRemoveMiddleTask_ShouldRemainOrder() {
+        //given
+        task.setId(TASK_ID);
+        Task task2 = new Task(TASK_NAME + " " + (TASK_ID + 1), TASK_DESCRIPTION + " " + (TASK_ID + 1));
+        task2.setId(TASK_ID + 1);
+
+        Task task3 = new Task(TASK_NAME + " " + (TASK_ID + 2), TASK_DESCRIPTION + " " + (TASK_ID + 2));
+        task3.setId(TASK_ID + 2);
+
+        //when
+        historyManager.add(task);
+        historyManager.add(task2);
+        historyManager.add(task3);
+        historyManager.remove(task2.getId());
+        List<Task> historyList = historyManager.getHistory();
+
+        //then
+        assertEquals(2,historyList.size(), "Из истории должна быть удалена одна задача");
+        assertEquals(task3.getId(), historyList.get(1).getId(), "Вторая из середины не удалена");
     }
 
 }
