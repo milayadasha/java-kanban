@@ -14,10 +14,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         System.out.println("Файл создан: " + file.getAbsolutePath());
         FileBackedTaskManager fileBackedTaskManager = Managers.getDefaultFileBacked(file);
 
-        Task task = fileBackedTaskManager.addTask(new Task("Задача","Описание задачи"));
-        Epic epic = fileBackedTaskManager.addEpic(new Epic("Эпик","Описание эпика"));
+        Task task = fileBackedTaskManager.addTask(new Task("Задача", "Описание задачи"));
+        Epic epic = fileBackedTaskManager.addEpic(new Epic("Эпик", "Описание эпика"));
         Subtask subtask = fileBackedTaskManager.addSubtask(new Subtask("Подзадача",
-                "Описание подзадачи",epic.getId()));
+                "Описание подзадачи", epic.getId()));
 
         FileBackedTaskManager newFileBackedTaskManager = loadFromFile(file);
         Task newTask = newFileBackedTaskManager.addTask(new Task("Новая задача",
@@ -81,6 +81,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     /**
      * Вызывает родительский метод добавления задачи
      * Сохраняет состояние в файл
+     *
      * @param task объект задачи, которую нужно добавить (может быть null)
      * @return копия созданной задачи с присвоенным ID или null, если передан null
      */
@@ -94,6 +95,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     /**
      * Вызывает родительский метод обновления задачи
      * Сохраняет состояние в файл
+     *
      * @param task объект задачи, которую нужно обновить (может быть null)
      */
     @Override
@@ -125,6 +127,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     /**
      * Вызывает родительский метод добавления эпика
      * Сохраняет состояние в файл
+     *
      * @param epic объект эпика, который нужно добавить (может быть null)
      * @return копия созданного эпика с присвоенным ID или null, если передан null
      */
@@ -138,6 +141,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     /**
      * Вызывает родительский метод обновления эпика
      * Сохраняет состояние в файл
+     *
      * @param epic объект эпика, который нужно обновить (может быть null)
      */
     @Override
@@ -169,6 +173,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     /**
      * Вызывает родительский метод добавления подзадачи
      * Сохраняет состояние в файл
+     *
      * @param subtask объект подзадачи, которую нужно добавить (может быть null)
      * @return копия созданной подзадачи с присвоенным ID или null, если передан null
      */
@@ -182,6 +187,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     /**
      * Вызывает родительский метод обновления подзадачи
      * Сохраняет состояние в файл
+     *
      * @param subtask объект подзадачи, которую нужно обновить (может быть null)
      */
     @Override
@@ -220,7 +226,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             taskType = TaskType.TASK;
         }
         return String.format("%s,%s,%s,%s,%s,%s",
-                task.getId(),taskType, task.getName(), task.getStatus(), task.getDescription(), epicId);
+                task.getId(), taskType, task.getName(), task.getStatus(), task.getDescription(), epicId);
     }
 
     /**
@@ -253,6 +259,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     /**
      * Заполняет менеджер задач информацией из файла
+     *
      * @param file файл, из которого надо получить все задачи, подзадачи и эпики
      * @return созданный новый менеджер, который заполнен
      */
@@ -263,7 +270,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             throw new IOException("Указанный файл не существует");
         }
 
-        try (BufferedReader br = new BufferedReader(new FileReader(file))){
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             br.readLine();
             while (br.ready()) {
                 String fileString = br.readLine();
@@ -271,11 +278,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     Task task = fileBackedTaskManager.fromString(fileString);
                     lastId = Integer.max(lastId, task.getId());
                     if (task instanceof Subtask subtask) {
-                        fileBackedTaskManager.subtasks.put(subtask.getId(),subtask);
+                        fileBackedTaskManager.subtasks.put(subtask.getId(), subtask);
                     } else if (task instanceof Epic epic) {
-                        fileBackedTaskManager.epics.put(epic.getId(),epic);
+                        fileBackedTaskManager.epics.put(epic.getId(), epic);
                     } else {
-                        fileBackedTaskManager.tasks.put(task.getId(),task);
+                        fileBackedTaskManager.tasks.put(task.getId(), task);
                     }
                 }
             }
