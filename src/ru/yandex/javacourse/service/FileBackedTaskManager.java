@@ -299,7 +299,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             fileBackedTaskManager.updateEpic(epic);
         }
 
-        setIdCount(lastId);
+        fileBackedTaskManager.idCount = lastId;
         return fileBackedTaskManager;
     }
 }
