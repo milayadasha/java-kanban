@@ -25,6 +25,16 @@ class HistoryManagerTest {
     }
 
     @Test
+    @DisplayName("Должен возвращать true, если без добавления задачи история пустая")
+    void test_getHistory_WhenTaskNotAddedToHistoryManager_ShouldBeEmpty() {
+        //given && when
+        final List<Task> history = historyManager.getHistory();
+
+        //then
+        assertEquals(0, history.size(), "Без добавления задачи история должна быть пустой.");
+    }
+
+    @Test
     @DisplayName("Должен возвращать true, если удалось добавить задачу в менеджер")
     void test_Add_WhenTaskAddedToHistoryManager_ShouldReturnTrue() {
         //given
@@ -57,7 +67,7 @@ class HistoryManagerTest {
     }
 
     @Test
-    @DisplayName("Должен возвращать true, если менеджер хранит только последнюю версию задачи")
+    @DisplayName("Должен возвращать true, если при удалении средней задачи остальные корректно сдвигаются")
     public void test_Remove_AfterRemoveMiddleTask_ShouldRemainOrder() {
         //given
         task.setId(TASK_ID);
@@ -76,7 +86,56 @@ class HistoryManagerTest {
 
         //then
         assertEquals(2,historyList.size(), "Из истории должна быть удалена одна задача");
-        assertEquals(task3.getId(), historyList.get(1).getId(), "Вторая из середины не удалена");
+        assertEquals(task.getId(), historyList.get(0).getId(), "Первая задача перестала быть первой");
+        assertEquals(task3.getId(), historyList.get(1).getId(), "Третья задача не стала второй");
+    }
+
+    @Test
+    @DisplayName("Должен возвращать true, если при удалении первой задачи остальные корректно сдвигаются")
+    public void test_Remove_AfterRemoveFirstTask_ShouldRemainOrder() {
+        //given
+        task.setId(TASK_ID);
+        Task task2 = new Task(TASK_NAME + " " + (TASK_ID + 1), TASK_DESCRIPTION + " " + (TASK_ID + 1));
+        task2.setId(TASK_ID + 1);
+
+        Task task3 = new Task(TASK_NAME + " " + (TASK_ID + 2), TASK_DESCRIPTION + " " + (TASK_ID + 2));
+        task3.setId(TASK_ID + 2);
+
+        //when
+        historyManager.add(task);
+        historyManager.add(task2);
+        historyManager.add(task3);
+        historyManager.remove(task.getId());
+        List<Task> historyList = historyManager.getHistory();
+
+        //then
+        assertEquals(2,historyList.size(), "Из истории должна быть удалена одна задача");
+        assertEquals(task2.getId(), historyList.get(0).getId(), "Вторая задача не стала первой");
+        assertEquals(task3.getId(), historyList.get(1).getId(), "Третья задача не стала второй");
+    }
+
+    @Test
+    @DisplayName("Должен возвращать true, если при удалении первой задачи остальные корректно сдвигаются")
+    public void test_Remove_AfterRemoveLastTask_ShouldRemainOrder() {
+        //given
+        task.setId(TASK_ID);
+        Task task2 = new Task(TASK_NAME + " " + (TASK_ID + 1), TASK_DESCRIPTION + " " + (TASK_ID + 1));
+        task2.setId(TASK_ID + 1);
+
+        Task task3 = new Task(TASK_NAME + " " + (TASK_ID + 2), TASK_DESCRIPTION + " " + (TASK_ID + 2));
+        task3.setId(TASK_ID + 2);
+
+        //when
+        historyManager.add(task);
+        historyManager.add(task2);
+        historyManager.add(task3);
+        historyManager.remove(task3.getId());
+        List<Task> historyList = historyManager.getHistory();
+
+        //then
+        assertEquals(2,historyList.size(), "Из истории должна быть удалена одна задача");
+        assertEquals(task.getId(), historyList.get(0).getId(), "Первая задача перестала быть первой");
+        assertEquals(task2.getId(), historyList.get(1).getId(), "Вторая задача перестала быть второй");
     }
 
 }

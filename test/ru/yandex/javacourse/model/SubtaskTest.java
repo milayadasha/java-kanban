@@ -45,4 +45,17 @@ class SubtaskTest {
         //then
         assertNull(resultSubtask, "Удалось добавить подзадачу в качестве собственного эпика");
     }
+
+    @Test
+    @DisplayName("Должен возвращать не null EpicId при попытке добавить подзадачу")
+    public void test_AddSubtask_WhenSubtaskAdded_ShouldHasEpicId() {
+        //given
+        Subtask subtask = new Subtask(SUBTASK_NAME_1,SUBTASK_DESCRIPTION_1 , EPIC_ID);
+
+        //when
+        Integer resultSubtaskEpicId = subtask.getEpicId();
+
+        //then
+        assertNotNull(resultSubtaskEpicId, "При добавлении задачи у неё нет id эпика");
+    }
 }
