@@ -5,6 +5,7 @@ import ru.yandex.javacourse.model.Subtask;
 import ru.yandex.javacourse.model.Task;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 public interface TaskManager {
 
@@ -112,6 +113,26 @@ public interface TaskManager {
      * Возвращает список просмотренных задач
      */
     List<Task> getHistory();
+
+    /**
+     * Пересчитывает все даты внутри эпика
+     */
+    void updateEpicDates(Epic epic);
+
+    /**
+     * Выводит список задач в порядке приоритета
+     */
+    TreeSet<Task> getPrioritizedTasks();
+
+    /**
+     * Проверяет, пересекаются ли две задачи по времени
+     */
+    boolean ifTasksCrossInTime(Task firstTask, Task secondTask);
+
+    /**
+     * Проверяет, пересекается ли заданная задача с любой задаче из менеджера
+     */
+    boolean hasCrossInTimeWithManagerTasks(Task task);
 }
 
 

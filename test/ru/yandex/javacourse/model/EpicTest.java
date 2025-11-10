@@ -4,7 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.yandex.javacourse.service.Managers;
 import ru.yandex.javacourse.service.TaskManager;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class EpicTest {
@@ -13,6 +12,8 @@ class EpicTest {
     private static final String EPIC_NAME_2 = "Эпик 2";
     private static final String EPIC_DESCRIPTION_2 = "Второй эпик";
     private static final int EPIC_ID = 1;
+    private static final String SUBTASK_NAME = "Подзадача";
+    private static final String SUBTASK_DESCRIPTION = "Новая подзадача";
 
     TaskManager taskManager = Managers.getDefault();
 
@@ -44,5 +45,73 @@ class EpicTest {
 
         //then
         assertNull(resultSubtask, "Смогли добавить эпик в качестве собственной подзадачи");
+    }
+
+    @Test
+    @DisplayName("При добавлении подзадач со статусом NEW у эпика тоже должен быть статус NEW")
+    public void test_AddSubtask_WhenAllSubtasksNew_EpicStatusNew() {
+        //given
+        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME_1,EPIC_DESCRIPTION_1));
+
+        //when
+        taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION,
+                epic.getId()));
+        taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION,
+                epic.getId()));
+        Epic returnedEpic = taskManager.getEpicById(epic.getId());
+
+        //then
+        assertEquals("NEW",returnedEpic.getStatus().toString(), "Статус эпика должен быть NEW");
+    }
+
+    @Test
+    @DisplayName("При добавлении подзадач со статусом DONE у эпика тоже должен быть статус DONE")
+    public void test_AddSubtask_WhenAllSubtasksDone_EpicStatusDone() {
+        //given
+        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME_1,EPIC_DESCRIPTION_1));
+
+        //when
+        taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION, TaskStatus.DONE,
+                epic.getId()));
+        taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION, TaskStatus.DONE,
+                epic.getId()));
+        Epic returnedEpic = taskManager.getEpicById(epic.getId());
+
+        //then
+        assertEquals("DONE",returnedEpic.getStatus().toString(), "Статус эпика должен быть DONE");
+    }
+
+    @Test
+    @DisplayName("При добавлении подзадач со статусом IN_PROGRESS у эпика тоже должен быть статус IN_PROGRESS")
+    public void test_AddSubtask_WhenAllSubtasksInProgress_EpicStatusInProgress() {
+        //given
+        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME_1,EPIC_DESCRIPTION_1));
+
+        //when
+        taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION, TaskStatus.IN_PROGRESS,
+                epic.getId()));
+        taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION, TaskStatus.IN_PROGRESS,
+                epic.getId()));
+        Epic returnedEpic = taskManager.getEpicById(epic.getId());
+
+        //then
+        assertEquals("IN_PROGRESS",returnedEpic.getStatus().toString(), "Статус эпика должен быть DONE");
+    }
+
+    @Test
+    @DisplayName("При добавлении подзадач с разными статусами у эпика  должен быть статус IN_PROGRESS")
+    public void test_AddSubtask_WhenSubtasksInProgressDone_EpicStatusInProgress() {
+        //given
+        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME_1,EPIC_DESCRIPTION_1));
+
+        //when
+        taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION, TaskStatus.IN_PROGRESS,
+                epic.getId()));
+        taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION, TaskStatus.DONE,
+                epic.getId()));
+        Epic returnedEpic = taskManager.getEpicById(epic.getId());
+
+        //then
+        assertEquals("IN_PROGRESS",returnedEpic.getStatus().toString(), "Статус эпика должен быть DONE");
     }
 }

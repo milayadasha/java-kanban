@@ -1,12 +1,23 @@
 package ru.yandex.javacourse.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Epic extends Task {
     private ArrayList<Integer> subtasksIdList = new ArrayList<>();
+    private LocalDateTime endTime;
 
     public Epic(String name, String description) {
         super(name, description);
+    }
+
+    @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public ArrayList<Integer> getSubtasksIdList() {
@@ -38,6 +49,8 @@ public class Epic extends Task {
         epicCopy.setId(this.getId());
         epicCopy.setStatus(this.getStatus());
         epicCopy.setSubtasksIdList(new ArrayList<>(this.getSubtasksIdList()));
+        epicCopy.setDuration(this.getDuration());
+        epicCopy.setStartTime(this.getStartTime());
         return epicCopy;
     }
 
@@ -49,6 +62,8 @@ public class Epic extends Task {
                 ", description='" + getDescription() + '\'' +
                 ", id=" + getId() +
                 ", status=" + getStatus() + '\'' +
+                ", startTime=" + getStartTime() +
+                ", duration =" + getDuration() +
                 ", subtasksIdList=" + subtasksIdList +
                 '}';
     }

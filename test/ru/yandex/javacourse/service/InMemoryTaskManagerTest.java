@@ -2,203 +2,111 @@ package ru.yandex.javacourse.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import ru.yandex.javacourse.model.Epic;
-import ru.yandex.javacourse.model.Subtask;
 import ru.yandex.javacourse.model.Task;
-import java.util.List;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class InMemoryTaskManagerTest {
+class InMemoryTaskManagerTest extends TaskManagerTest<TaskManager> {
     private static final String TASK_NAME = "Задача";
     private static final String TASK_DESCRIPTION = "Новая задача";
-    private static final int PREDEFINED_TASK_ID = 99;
-    private static final String TASK_NAME_UPDATED = "Обновлённая задача";
-    private static final String TASK_DESCRIPTION_UPDATED = "Новая задача";
-    private static final String EPIC_NAME = "Эпик";
-    private static final String EPIC_DESCRIPTION = "Новый эпик";
-    private static final String SUBTASK_NAME = "Подзадача";
-    private static final String SUBTASK_DESCRIPTION = "Новая подзадача";
+    private static final Integer TASK_ID = 1;
 
-    TaskManager taskManager = Managers.getDefault();
-
-    @Test
-    @DisplayName("Должен успешно добавлять задачу и возвращать ее по ID")
-    public void test_AddTask_WhenTaskAddedToManager_ShouldBeRetrievableById() {
-        //given
-        Task task = taskManager.addTask(new Task(TASK_NAME,TASK_DESCRIPTION));
-
-        //when
-        Task findTask = taskManager.getTaskById(task.getId());
-
-        //then
-        assertNotNull(findTask, "Задача не найдена.");
-        assertEquals(task, findTask, "Задачи не совпадают.");
-
-        List<Task> tasksList = taskManager.getAllTasks();
-
-        assertNotNull(tasksList, "Задачи не возвращаются");
-        assertEquals(1, tasksList.size(), "Неверное количество задач.");
-        assertEquals(task, tasksList.get(0), "Задачи не совпадают.");
+    @Override
+    protected TaskManager createTaskManager() {
+        return Managers.getDefault();
     }
 
     @Test
-    @DisplayName("Должен успешно добавлять эпик и возвращать его  по ID")
-    public void test_AddEpic_WhenEpicAddedToManager_ShouldBeRetrievableById() {
+    @DisplayName("Должен возвращать false, если при поиске пересечений для сравнения переданы две одинаковые задачи")
+    public void test_ifTasksCrossInTime_WhenTaskEquals_ShouldReturnFalse() {
         //given
-        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME,EPIC_DESCRIPTION));
+        LocalDateTime now = LocalDateTime.now();
+        Duration taskDuration = Duration.ofMinutes(30);
+        Task task = taskManager.addTask(new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now));
+        task.setId(TASK_ID);
 
         //when
-        Epic findEpic = taskManager.getEpicById(epic.getId());
+        Task firstTask = taskManager.getTaskById(task.getId());
+        Task secondTask = taskManager.getTaskById(task.getId());
+        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask,secondTask);
 
         //then
-        assertNotNull(findEpic, "Эпик не найден.");
-        assertEquals(epic, findEpic, "Эпики не совпадают.");
-
-        List<Epic> epicsList = taskManager.getAllEpics();
-
-        assertNotNull(epicsList, "Эпики не возвращаются");
-        assertEquals(1, epicsList.size(), "Неверное количество эпиков.");
-        assertEquals(epic, epicsList.get(0), "Эпики не совпадают.");
+        assertFalse(hasCross, "Пересечение не должно считаться, если задача сравнивается сама с собой.");
     }
 
     @Test
-    @DisplayName("Должен успешно добавлять подзадачу и возвращать ее по ID")
-    public void test_AddSubtask_WhenSubtaskAddedToManager_ShouldBeRetrievableById() {
+    @DisplayName("Должен возвращать true, если вторая задача начинается до конца первой")
+    public void test_ifTasksCrossInTime_WhenTaskStartsBeforeOtherFinish_ShouldReturnTrue() {
         //given
-        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME,EPIC_DESCRIPTION));
-        Subtask subtask = taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION,
-                epic.getId()));
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nowPlus = now.plusHours(1);
+        Duration taskDuration = Duration.ofHours(10);
+        Task firstTask = new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now);
+        firstTask.setId(TASK_ID);
+        Task secondTask = new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, nowPlus);
+        secondTask.setId(TASK_ID + 1);
 
         //when
-        Subtask findSubtask = taskManager.getSubtaskById(subtask.getId());
+        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask,secondTask);
 
         //then
-        assertNotNull(findSubtask,"Подзадача не найдена.");
-        assertEquals(subtask, findSubtask, "Подзадачи не совпадают.");
-
-        List<Subtask> subtasksList = taskManager.getAllSubtasks();
-
-        assertNotNull(subtasksList, "Подзадачи не возвращаются");
-        assertEquals(1, subtasksList.size(), "Неверное количество подзадач.");
-        assertEquals(subtask, subtasksList.get(0), "Подзадачи не совпадают.");
+        assertTrue(hasCross, "Задача не может начаться пока другая задача не закончится.");
     }
 
     @Test
-    @DisplayName("Должен генерировать уникальный ID при добавлении задачи с установленным ID")
-    public void test_AddTask_WhenTaskHasPredefinedId_ShouldGenerateNewId() {
+    @DisplayName("Должен возвращать true, если первая задача начинается до конца второй задачи")
+    public void test_ifTasksCrossInTime_WhenTaskStartsBeforeOtherFinishSwitch_ShouldReturnTrue() {
         //given
-        Task task = new Task(TASK_NAME, TASK_DESCRIPTION);
-        task.setId(PREDEFINED_TASK_ID);
+        LocalDateTime secondStart = LocalDateTime.now();
+        LocalDateTime firstStart = secondStart.plusHours(3);
+        Duration firstDuration = Duration.ofHours(10);
+        Duration secondDuration = Duration.ofHours(4);
+
+        Task firstTask = new Task(TASK_NAME, TASK_DESCRIPTION,firstDuration, firstStart);
+        firstTask.setId(TASK_ID);
+        Task secondTask = new Task(TASK_NAME, TASK_DESCRIPTION,secondDuration, secondStart);
+        secondTask.setId(TASK_ID + 1);
 
         //when
-        Task createdTask = taskManager.addTask(task);
+        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask,secondTask);
 
         //then
-        assertNotEquals(task.getId(),createdTask.getId(), "Менеджер не генерит уникальный id во время" +
-                "добавления задачи");
-
+        assertTrue(hasCross, "Задача не может начаться пока другая задача не закончится.");
     }
 
     @Test
-    @DisplayName("Должен сохранять задачу в неизменном виде после добавления в менеджер")
-    public void test_AddTask_WhenTaskUpdatedAfterAddToTaskManager_TaskShouldRemainUnchanged() {
+    @DisplayName("Должен возвращать true, если две разные задачи начинаются в одинаковое время")
+    public void test_ifTasksCrossInTime_WhenTaskHasSameStart_ShouldReturnTrue() {
         //given
-        Task task = taskManager.addTask(new Task(TASK_NAME,TASK_DESCRIPTION));
+        LocalDateTime now = LocalDateTime.now();
+        Duration taskDuration = Duration.ofMinutes(30);
+        Task firstTask = new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now);
+        firstTask.setId(TASK_ID);
+        Task secondTask = new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now);
+        firstTask.setId(TASK_ID+1);
 
         //when
-        task.setName(TASK_NAME_UPDATED);
-        task.setDescription(TASK_DESCRIPTION_UPDATED);
+        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask,secondTask);
 
         //then
-        Task findTask = taskManager.getTaskById(task.getId());
-        assertEquals(TASK_NAME, findTask.getName(), "Задачи не совпадают по name.");
-        assertEquals(TASK_DESCRIPTION, findTask.getDescription(), "Задачи не совпадают по description.");
+        assertTrue(hasCross, "Задача не должна пересекаться по времени сама с собой.");
     }
 
     @Test
-    @DisplayName("При удалении задачи из менеджера она должна быть удалена из истории")
-    public void test_DeleteTaskById_WhenTaskRemoved_HistoryShouldBeEmpty() {
+    @DisplayName("Должен возвращать null при попытке добавить в менеджер задачу, пересекающуюся по времени" +
+            " с уже добавленной")
+    public void test_hasCrossInTimeWithManagerTasks_WhenTaskHasSameStart_ShouldReturnNull() {
         //given
-        Task task = taskManager.addTask(new Task(TASK_NAME,TASK_DESCRIPTION));
-        taskManager.getTaskById(task.getId());
+        LocalDateTime now = LocalDateTime.now();
+        Duration taskDuration = Duration.ofDays(30);
+        taskManager.addTask(new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now));
 
         //when
-        taskManager.deleteTaskById(task.getId());
+        Task secondTask = taskManager.addTask(new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now));
 
         //then
-        final List<Task> history = taskManager.getHistory();
-        assertEquals(0,history.size(), "История после удаления задачи должна быть пустой");
-    }
-
-    @Test
-    @DisplayName("При удалении эпика из менеджера он должен быть удален из истории")
-    public void test_DeleteEpicById_WhenEpicRemoved_HistoryShouldBeEmpty() {
-        //given
-        Epic epic  = taskManager.addEpic(new Epic(EPIC_NAME,EPIC_DESCRIPTION));
-        taskManager.getEpicById(epic.getId());
-
-        //when
-        taskManager.deleteEpicById(epic.getId());
-
-        //then
-        final List<Task> history = taskManager.getHistory();
-        assertEquals(0,history.size(), "История после удаления эпика должна быть пустой");
-    }
-
-    @Test
-    @DisplayName("При удалении подзадачи из менеджера она должна быть удален из истории")
-    public void test_DeleteSubtaskById_WhenSubtaskRemoved_HistoryShouldBeEmpty() {
-        //given
-        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME,EPIC_DESCRIPTION));
-        Subtask subtask = taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION,
-                epic.getId()));
-        taskManager.getSubtaskById(subtask.getId());
-
-
-        //when
-        taskManager.deleteSubtaskById(subtask.getId());
-
-        //then
-        final List<Task> history = taskManager.getHistory();
-        assertEquals(0,history.size(), "История после удаления подзадачи должна быть пустой");
-    }
-
-    @Test
-    @DisplayName("При удалении подзадач из менеджера она должна быть удален из списка id подзадач эпика")
-    public void test_DeleteAllSubtask_WhenSubtasksRemoved_EpicSubtasksIdListShouldBeEmpty() {
-        //given
-        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME,EPIC_DESCRIPTION));
-        Subtask subtask1 = taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION,
-                epic.getId()));
-        Subtask subtask2 = taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION,
-                epic.getId()));
-
-
-        //when
-        taskManager.deleteAllSubtasks();
-
-        //then
-        assertEquals(0,epic.getSubtasksIdList().size(), "После удаления подзадач внутри эпиков" +
-                " не должно оставаться неактуальных id подзадач");
-    }
-
-    @Test
-    @DisplayName("При удалении эпика из менеджера его подзадачи должны быть удалены из списка подзадач")
-    public void test_DeleteEpicById_WhenSEpicRemoved_SubtasksShouldBeEmpty() {
-        //given
-        Epic epic = taskManager.addEpic(new Epic(EPIC_NAME,EPIC_DESCRIPTION));
-        Subtask subtask1 = taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION,
-                epic.getId()));
-        Subtask subtask2 = taskManager.addSubtask(new Subtask(SUBTASK_NAME,SUBTASK_DESCRIPTION,
-                epic.getId()));
-
-
-        //when
-        taskManager.deleteEpicById(epic.getId());
-        List<Subtask> subtasks = taskManager.getAllSubtasks();
-
-        //then
-        assertEquals(0,subtasks.size(), "После удаления эпика список подзадач должен быть очищен");
+        assertNull(secondTask, "Задача не может быть добавлена в менеджер, если есть пересечение по времени");
     }
 }
