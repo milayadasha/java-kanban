@@ -29,7 +29,7 @@ abstract class BaseHttpHandler implements HttpHandler {
      * Основной метод, который обрабатывает входящий запрос
      */
     @Override
-    abstract public void handle(HttpExchange exchange) throws IOException;
+    public abstract void handle(HttpExchange exchange) throws IOException;
 
     /**
      * Отправляет ответ от сервера клиенту с указанным кодом.

@@ -6,7 +6,6 @@ import ru.yandex.javacourse.http.HttpStatusCode;
 import ru.yandex.javacourse.model.Task;
 import ru.yandex.javacourse.service.TaskManager;
 
-import java.io.IOException;
 import java.util.List;
 
 public class HistoryHandler extends BaseHttpHandler {
@@ -18,7 +17,7 @@ public class HistoryHandler extends BaseHttpHandler {
      * Основной метод, который обрабатывает входящий запрос
      */
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handle(HttpExchange exchange) {
         String[] pathSplitValues = exchange.getRequestURI().getPath().split("/");
         String requestMethod = exchange.getRequestMethod();
 
