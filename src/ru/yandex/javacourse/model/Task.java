@@ -27,6 +27,7 @@ public class Task {
     public Task(String name, String description, Duration duration, LocalDateTime startTime) {
         this.name = name;
         this.description = description;
+        this.status = TaskStatus.NEW;
         this.duration = duration;
         this.startTime = startTime;
     }

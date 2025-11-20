@@ -48,7 +48,9 @@ public class Epic extends Task {
         Epic epicCopy = new Epic(this.getName(), this.getDescription());
         epicCopy.setId(this.getId());
         epicCopy.setStatus(this.getStatus());
-        epicCopy.setSubtasksIdList(new ArrayList<>(this.getSubtasksIdList()));
+        if (this.getSubtasksIdList() != null) {
+            epicCopy.setSubtasksIdList(new ArrayList<>(this.getSubtasksIdList()));
+        }
         epicCopy.setDuration(this.getDuration());
         epicCopy.setStartTime(this.getStartTime());
         return epicCopy;

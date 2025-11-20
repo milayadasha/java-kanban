@@ -2,6 +2,7 @@ package ru.yandex.javacourse.model;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ru.yandex.javacourse.exceptions.NotFoundException;
 import ru.yandex.javacourse.service.Managers;
 import ru.yandex.javacourse.service.TaskManager;
 
@@ -21,36 +22,34 @@ class SubtaskTest {
     @DisplayName("Должен возвращать true при сравнении двух подзадач с одинаковым ID")
     public void test_Equals_WhenSubtasksHaveSameId_ShouldReturnTrue() {
         //given
-        Subtask subtask1 = new Subtask(SUBTASK_NAME_1,SUBTASK_DESCRIPTION_1, EPIC_ID);
+        Subtask subtask1 = new Subtask(SUBTASK_NAME_1, SUBTASK_DESCRIPTION_1, EPIC_ID);
         subtask1.setId(SUBTASK_ID);
 
         //when
-        Subtask subtask2 = new Subtask(SUBTASK_NAME_2,SUBTASK_DESCRIPTION_2, EPIC_ID);
+        Subtask subtask2 = new Subtask(SUBTASK_NAME_2, SUBTASK_DESCRIPTION_2, EPIC_ID);
         subtask2.setId(SUBTASK_ID);
 
         //then
-        assertEquals(subtask1,subtask2, "Подзадачи не равны");
+        assertEquals(subtask1, subtask2, "Подзадачи не равны");
     }
 
     @Test
-    @DisplayName("Должен возвращать null при попытке добавить подзадачу с ID равным ID эпика")
-    public void test_AddSubtask_WhenSubtaskAddedLikeOwnEpic_ShouldReturnNull() {
-        //given
-        Subtask subtask = new Subtask(SUBTASK_NAME_1,SUBTASK_DESCRIPTION_1 , EPIC_ID);
+    @DisplayName("Должен возвращать NotFoundException при попытке добавить подзадачу с ID равным ID эпика")
+    public void test_AddSubtask_WhenSubtaskAddedLikeOwnEpic_ShouldReturnNotFoundException() {
+        //given && when
+        Subtask subtask = new Subtask(SUBTASK_NAME_1, SUBTASK_DESCRIPTION_1, EPIC_ID);
         subtask.setId(subtask.getEpicId());
 
-        //when
-        Subtask resultSubtask = taskManager.addSubtask(subtask);
-
         //then
-        assertNull(resultSubtask, "Удалось добавить подзадачу в качестве собственного эпика");
+        assertThrows(NotFoundException.class, () -> taskManager.addSubtask(subtask),
+                "Должно быть исключение при попытке добавить сабтаску как собственный эпик");
     }
 
     @Test
     @DisplayName("Должен возвращать не null EpicId при попытке добавить подзадачу")
     public void test_AddSubtask_WhenSubtaskAdded_ShouldHasEpicId() {
         //given
-        Subtask subtask = new Subtask(SUBTASK_NAME_1,SUBTASK_DESCRIPTION_1 , EPIC_ID);
+        Subtask subtask = new Subtask(SUBTASK_NAME_1, SUBTASK_DESCRIPTION_1, EPIC_ID);
 
         //when
         Integer resultSubtaskEpicId = subtask.getEpicId();
