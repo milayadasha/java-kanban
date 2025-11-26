@@ -2,6 +2,7 @@ package ru.yandex.javacourse.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ru.yandex.javacourse.exceptions.NotFoundException;
 import ru.yandex.javacourse.model.Task;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -24,13 +25,13 @@ class InMemoryTaskManagerTest extends TaskManagerTest<TaskManager> {
         //given
         LocalDateTime now = LocalDateTime.now();
         Duration taskDuration = Duration.ofMinutes(30);
-        Task task = taskManager.addTask(new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now));
+        Task task = taskManager.addTask(new Task(TASK_NAME, TASK_DESCRIPTION, taskDuration, now));
         task.setId(TASK_ID);
 
         //when
         Task firstTask = taskManager.getTaskById(task.getId());
         Task secondTask = taskManager.getTaskById(task.getId());
-        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask,secondTask);
+        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask, secondTask);
 
         //then
         assertFalse(hasCross, "Пересечение не должно считаться, если задача сравнивается сама с собой.");
@@ -43,13 +44,13 @@ class InMemoryTaskManagerTest extends TaskManagerTest<TaskManager> {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime nowPlus = now.plusHours(1);
         Duration taskDuration = Duration.ofHours(10);
-        Task firstTask = new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now);
+        Task firstTask = new Task(TASK_NAME, TASK_DESCRIPTION, taskDuration, now);
         firstTask.setId(TASK_ID);
-        Task secondTask = new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, nowPlus);
+        Task secondTask = new Task(TASK_NAME, TASK_DESCRIPTION, taskDuration, nowPlus);
         secondTask.setId(TASK_ID + 1);
 
         //when
-        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask,secondTask);
+        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask, secondTask);
 
         //then
         assertTrue(hasCross, "Задача не может начаться пока другая задача не закончится.");
@@ -64,13 +65,13 @@ class InMemoryTaskManagerTest extends TaskManagerTest<TaskManager> {
         Duration firstDuration = Duration.ofHours(10);
         Duration secondDuration = Duration.ofHours(4);
 
-        Task firstTask = new Task(TASK_NAME, TASK_DESCRIPTION,firstDuration, firstStart);
+        Task firstTask = new Task(TASK_NAME, TASK_DESCRIPTION, firstDuration, firstStart);
         firstTask.setId(TASK_ID);
-        Task secondTask = new Task(TASK_NAME, TASK_DESCRIPTION,secondDuration, secondStart);
+        Task secondTask = new Task(TASK_NAME, TASK_DESCRIPTION, secondDuration, secondStart);
         secondTask.setId(TASK_ID + 1);
 
         //when
-        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask,secondTask);
+        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask, secondTask);
 
         //then
         assertTrue(hasCross, "Задача не может начаться пока другая задача не закончится.");
@@ -82,31 +83,30 @@ class InMemoryTaskManagerTest extends TaskManagerTest<TaskManager> {
         //given
         LocalDateTime now = LocalDateTime.now();
         Duration taskDuration = Duration.ofMinutes(30);
-        Task firstTask = new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now);
+        Task firstTask = new Task(TASK_NAME, TASK_DESCRIPTION, taskDuration, now);
         firstTask.setId(TASK_ID);
-        Task secondTask = new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now);
-        firstTask.setId(TASK_ID+1);
+        Task secondTask = new Task(TASK_NAME, TASK_DESCRIPTION, taskDuration, now);
+        firstTask.setId(TASK_ID + 1);
 
         //when
-        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask,secondTask);
+        boolean hasCross = taskManager.ifTasksCrossInTime(firstTask, secondTask);
 
         //then
         assertTrue(hasCross, "Задача не должна пересекаться по времени сама с собой.");
     }
 
     @Test
-    @DisplayName("Должен возвращать null при попытке добавить в менеджер задачу, пересекающуюся по времени" +
+    @DisplayName("Должен возвращать NotFoundException при попытке добавить в менеджер задачу, пересекающуюся по времени" +
             " с уже добавленной")
-    public void test_hasCrossInTimeWithManagerTasks_WhenTaskHasSameStart_ShouldReturnNull() {
-        //given
+    public void test_hasCrossInTimeWithManagerTasks_WhenTaskHasSameStart_ShouldReturnNotFoundException() {
+        //given && when
         LocalDateTime now = LocalDateTime.now();
         Duration taskDuration = Duration.ofDays(30);
-        taskManager.addTask(new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now));
-
-        //when
-        Task secondTask = taskManager.addTask(new Task(TASK_NAME, TASK_DESCRIPTION,taskDuration, now));
+        taskManager.addTask(new Task(TASK_NAME, TASK_DESCRIPTION, taskDuration, now));
 
         //then
-        assertNull(secondTask, "Задача не может быть добавлена в менеджер, если есть пересечение по времени");
+        assertThrows(NotFoundException.class,
+                () -> taskManager.addTask(new Task(TASK_NAME, TASK_DESCRIPTION, taskDuration, now)),
+                "Задача не может быть добавлена в менеджер, если есть пересечение по времени");
     }
 }
